@@ -35,7 +35,7 @@
   align-content: center;
   column-gap: var(--space-2);
   row-gap: 0;
-  max-width: 81.25rem;
+  max-width: 87.5rem; // 1400px: caben enlaces y los dos botones
   min-height: var(--navbar-height);
   margin: 0 auto;
   padding: 0 var(--space-3);
@@ -283,7 +283,8 @@
 
   @include bp.up(xl) {
     display: flex;
-    gap: clamp(1.5rem, 2.78vw, 2.5rem); // 40px a 1440px
+    // Se ajusta al ancho: de 1280px a 1600px pasa de ~26px a 40px.
+    gap: clamp(1rem, 2vw, 2.5rem);
     padding: 0;
     border-top: 0;
 
@@ -307,6 +308,12 @@
   letter-spacing: 0;
   text-decoration: none;
   white-space: nowrap;
+
+  // En escritorio el tamaño acompaña al ancho (16px a 1280px, 20px desde 1600px)
+  // para que enlaces y botones quepan en la cápsula.
+  @include bp.up(xl) {
+    font-size: clamp(1rem, 1.25vw, 1.25rem);
+  }
 
   @media (prefers-reduced-motion: no-preference) {
     transition: color 0.2s ease;
@@ -364,8 +371,9 @@
   @include bp.up(xl) {
     --ui-button-border-width: 2.5px;
 
-    padding: calc(0.59375rem + 2.5px) calc(1.75rem + 2.5px); // 9.5px 28px + contorno
-    font-size: 1.25rem;
+    // 9.5px 28px + contorno desde 1600px; más compacto en pantallas menores.
+    padding: calc(0.59375rem + 2.5px) calc(clamp(1rem, 1.75vw, 1.75rem) + 2.5px);
+    font-size: clamp(1rem, 1.25vw, 1.25rem);
   }
 }
 

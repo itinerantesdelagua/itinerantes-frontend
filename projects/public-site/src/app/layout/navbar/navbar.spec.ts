@@ -27,7 +27,7 @@ describe('Navbar', () => {
     const buttons = Array.from(host.querySelectorAll('.navbar__actions .navbar__cta')).map((a) =>
       a.textContent?.trim(),
     );
-    expect(buttons).toEqual(['Inicia sesión', 'Regístrate']);
+    expect(buttons).toEqual(['Regístrate', 'Inicia sesión']);
     expect(host.querySelector('.navbar__cta--login')?.getAttribute('href')).toMatch(/\/login$/);
   });
 
