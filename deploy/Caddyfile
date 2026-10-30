@@ -1,0 +1,21 @@
+# Sirve una app de Angular (SPA): archivos estáticos y, para cualquier otra ruta, index.html.
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:{$PORT:8080} {
+	root * /srv
+	encode zstd gzip
+
+	# Archivos con hash: caché larga. Lo demás (index.html y rutas de la SPA): sin caché.
+	@static path_regexp \.(js|css|woff2?|png|jpe?g|webp|svg|ico)$
+	header @static Cache-Control "public, max-age=31536000, immutable"
+	header -Server
+	@page not path_regexp \.(js|css|woff2?|png|jpe?g|webp|svg|ico)$
+	header @page Cache-Control "no-cache"
+
+	try_files {path} /index.html
+	file_server
+}
