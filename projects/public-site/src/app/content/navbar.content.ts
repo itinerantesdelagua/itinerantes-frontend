@@ -3,8 +3,11 @@ import { NavbarContent } from '../layout/navbar/navbar-content';
 import { PAGE_PATHS } from './page-paths';
 import { SECTION_IDS } from './section-ids';
 
-/** Registro en el Portal (otra app); sin su dominio configurado queda en "#". */
-const registerHref = environment.portalUrl ? new URL('/registro', environment.portalUrl).href : '#';
+/** Registro e inicio de sesión en el Portal (otra app); sin su dominio configurado quedan en "#". */
+const portalHref = (path: string) =>
+  environment.portalUrl ? new URL(path, environment.portalUrl).href : '#';
+const registerHref = portalHref('/registro');
+const loginHref = portalHref('/login');
 
 export const NAVBAR_CONTENT: NavbarContent = {
   logo: {
@@ -25,6 +28,10 @@ export const NAVBAR_CONTENT: NavbarContent = {
   cta: {
     label: 'Regístrate',
     href: registerHref,
+  },
+  login: {
+    label: 'Inicia sesión',
+    href: loginHref,
   },
   menuOpenLabel: 'Abrir menú',
   menuCloseLabel: 'Cerrar menú',

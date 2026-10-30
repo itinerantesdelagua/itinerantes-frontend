@@ -7,7 +7,10 @@ export interface NavbarContent {
   readonly homeHref: string;
   readonly navLabel: string;
   readonly links: readonly UiLink[];
+  /** Botón principal: registro en el Portal. */
   readonly cta: UiLink;
+  /** Botón secundario: inicio de sesión en el Portal. */
+  readonly login: UiLink;
   readonly menuOpenLabel: string;
   readonly menuCloseLabel: string;
 }

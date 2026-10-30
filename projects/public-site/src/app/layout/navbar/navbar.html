@@ -42,8 +42,19 @@
       </div>
     </nav>
 
-    <a uiButton variant="secondary" class="navbar__cta" [href]="c.cta.href" (click)="closeMenu()">
-      {{ c.cta.label }}
-    </a>
+    <div class="navbar__actions">
+      <a
+        uiButton
+        variant="secondary"
+        class="navbar__cta navbar__cta--login"
+        [href]="c.login.href"
+        (click)="closeMenu()"
+      >
+        {{ c.login.label }}
+      </a>
+      <a uiButton variant="secondary" class="navbar__cta" [href]="c.cta.href" (click)="closeMenu()">
+        {{ c.cta.label }}
+      </a>
+    </div>
   </div>
 </header>

@@ -12,7 +12,7 @@ describe('Navbar', () => {
     return { fixture, host, toggle };
   }
 
-  it('renderiza un enlace por cada sección y el CTA', async () => {
+  it('renderiza un enlace por cada sección, el login y el registro', async () => {
     const { host } = await setup();
     const hrefs = Array.from(host.querySelectorAll('.navbar__link')).map((a) =>
       a.getAttribute('href'),
@@ -24,7 +24,11 @@ describe('Navbar', () => {
       '/escuela/oferta',
       '#contacto',
     ]);
-    expect(host.querySelector('.navbar__cta')?.textContent?.trim()).toBe('Regístrate');
+    const buttons = Array.from(host.querySelectorAll('.navbar__actions .navbar__cta')).map((a) =>
+      a.textContent?.trim(),
+    );
+    expect(buttons).toEqual(['Inicia sesión', 'Regístrate']);
+    expect(host.querySelector('.navbar__cta--login')?.getAttribute('href')).toMatch(/\/login$/);
   });
 
   it('abre y cierra el menú móvil reflejándolo en aria-expanded', async () => {
