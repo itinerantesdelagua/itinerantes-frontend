@@ -3,7 +3,7 @@ export const environment = {
   production: false,
   // Directo a Railway: la API permite CORS desde localhost:4200, 4201 y 4202
   // (levantar en uno de esos puertos).
-  apiBaseUrl: 'https://itinerantes-backend-production.up.railway.app',
+  apiBaseUrl: 'https://backend.itinerantesdelagua.com',
   /** La URL canónica apunta siempre al dominio de producción. */
   siteUrl: 'https://portal.itinerantesdelagua.com',
   /** Landing (catálogo y fichas de la oferta), en local con `ng serve public-site`. */
