@@ -1821,15 +1821,30 @@ export interface SessionSlotDto {
   readonly endsAt: string;
 }
 
+export interface OfferScheduleSlotDto {
+  /** Día ISO: 1 = lunes … 7 = domingo. */
+  readonly weekday: number;
+  /** Hora de inicio en CDMX (HH:mm) de ese día. */
+  readonly startTime: string;
+  /** Hora de fin en CDMX (HH:mm) de ese día. */
+  readonly endTime: string;
+  /** Primera sesión de ESE día según la regla, en UTC (para mostrarlo también en la hora del visitante). null si la oferta no tiene fecha de inicio. */
+  readonly firstSession: SessionSlotDto | null;
+}
+
 export interface OfferScheduleDto {
   /** Zona de la regla (hora oficial CDMX). */
   readonly timezone: string;
   /** Días ISO: 1 = lunes … 7 = domingo. */
   readonly weekdays: number[];
-  /** Hora de inicio en CDMX (HH:mm). */
+  /** Hora de inicio en CDMX (HH:mm) del primer día de la semana con clase (ver `slots`). */
   readonly startTime: string;
-  /** Hora de fin en CDMX (HH:mm). */
+  /** Hora de fin en CDMX (HH:mm) del primer día de la semana con clase (ver `slots`). */
   readonly endTime: string;
+  /** true si todos los días tienen el mismo horario (`startTime`–`endTime`). */
+  readonly sameTimeAllDays: boolean;
+  /** Horario de cada día de clase, de lunes a domingo (puede variar por día). */
+  readonly slots: OfferScheduleSlotDto[];
   /** Primera sesión según la regla, en UTC: sirve para mostrar "10:00 hora CDMX · 11:00 tu hora" con `Intl` (HU-11). null si la oferta no tiene fecha de inicio. */
   readonly firstSession: SessionSlotDto | null;
 }
@@ -2180,17 +2195,28 @@ export interface AdminOfferContentDto {
   readonly finalProjectGuidelines: string | null;
 }
 
-export interface ScheduleRuleDto {
-  /** Días ISO: 1 = lunes … 7 = domingo. */
-  readonly weekdays: number[];
+export interface ScheduleSlotDto {
+  /** Día ISO: 1 = lunes … 7 = domingo. */
+  readonly weekday: number;
   /** Inicio en hora CDMX (HH:mm). */
   readonly startTime: string;
   /** Fin en hora CDMX (HH:mm), posterior al inicio. */
   readonly endTime: string;
+}
+
+export interface ScheduleRuleDto {
+  /** Días ISO con clase (1 = lunes … 7 = domingo), derivados de `slots`. */
+  readonly weekdays: number[];
+  /** Inicio (CDMX, HH:mm) del primer día de `slots`. Compatibilidad: usa `slots`. */
+  readonly startTime: string;
+  /** Fin (CDMX, HH:mm) del primer día de `slots`. Compatibilidad: usa `slots`. */
+  readonly endTime: string;
+  /** Horario de cada día de clase, de lunes a domingo (puede variar por día). */
+  readonly slots: ScheduleSlotDto[];
   /** Fechas CDMX omitidas (recesos). */
-  readonly excludedDates?: string[];
+  readonly excludedDates: string[];
   /** Omite los festivos oficiales de México. */
-  readonly excludeMexicanHolidays?: boolean;
+  readonly excludeMexicanHolidays: boolean;
 }
 
 export interface AdminOfferScheduleDto {
@@ -2382,6 +2408,21 @@ export interface UpdateContentStepDto {
   readonly finalProjectGuidelines?: string | null;
 }
 
+export interface ScheduleRuleInputDto {
+  /** Horario por día de clase (sin días repetidos). */
+  readonly slots?: ScheduleSlotDto[];
+  /** Forma clásica: días ISO (1 = lunes … 7 = domingo) con el mismo horario. */
+  readonly weekdays?: number[];
+  /** Forma clásica: inicio en CDMX (HH:mm). */
+  readonly startTime?: string;
+  /** Forma clásica: fin en CDMX (HH:mm). */
+  readonly endTime?: string;
+  /** Fechas CDMX omitidas (recesos). */
+  readonly excludedDates?: string[];
+  /** Omite los festivos oficiales de México. */
+  readonly excludeMexicanHolidays?: boolean;
+}
+
 export interface UpdateScheduleStepDto {
   /** Apertura de inscripciones (convocatoria: de postulación). */
   readonly enrollmentOpensAt?: string | null;
@@ -2392,8 +2433,8 @@ export interface UpdateScheduleStepDto {
   readonly finalProjectDueAt?: string | null;
   /** Duración total en horas (curso ≤ 9 h; diplomado = 60 h). */
   readonly totalHours?: number | null;
-  /** Regla de horario en hora CDMX (genera las sesiones, HU-29). */
-  readonly scheduleRule?: ScheduleRuleDto | null;
+  /** Regla de horario en hora CDMX (genera las sesiones, HU-29). Admite horario distinto por día (`slots`) o el mismo para todos (`weekdays` + `startTime` + `endTime`). */
+  readonly scheduleRule?: ScheduleRuleInputDto | null;
   /** Color por defecto de las sesiones. */
   readonly calendarCategory?: CalendarCategory;
 }
@@ -3688,13 +3729,24 @@ export interface AdminSessionListDto {
   readonly data: AdminSessionDto[];
 }
 
-export interface ScheduleRuleBodyDto {
-  /** Días ISO (1 = lunes … 7 = domingo). */
-  readonly weekdays: string[];
+export interface ScheduleSlotBodyDto {
+  /** Día ISO (1 = lunes … 7 = domingo). */
+  readonly weekday: number;
   /** Inicio en hora CDMX (HH:mm). */
   readonly startTime: string;
   /** Fin en hora CDMX (HH:mm), posterior al inicio. */
   readonly endTime: string;
+}
+
+export interface ScheduleRuleBodyDto {
+  /** Horario por día de clase (sin días repetidos). */
+  readonly slots?: ScheduleSlotBodyDto[];
+  /** Forma clásica: días ISO (1 = lunes … 7 = domingo). */
+  readonly weekdays?: string[];
+  /** Forma clásica: inicio en CDMX (HH:mm). */
+  readonly startTime?: string;
+  /** Forma clásica: fin en CDMX (HH:mm), posterior al inicio. */
+  readonly endTime?: string;
   /** Fechas CDMX que se omiten sin reprogramar (recesos). */
   readonly excludedDates?: string[];
   /** Omitir festivos oficiales de México. */

@@ -9,7 +9,7 @@ import {
 } from 'data-access';
 import { CALENDAR_CATEGORY_LABELS } from '../../offer-labels';
 import { DateListField } from '../../shared/date-list-field';
-import { WeekdayPicker } from '../../shared/weekday-picker';
+import { ruleSlots, WeeklyScheduleField, WeeklySlot } from '../../shared/weekly-schedule-field';
 import { isoToZonedInput, zonedInputToIso } from '../../shared/zoned-time';
 import { formDirty } from './form-dirty';
 import { OfferStep } from './offer-step';
@@ -17,7 +17,7 @@ import { OfferStep } from './offer-step';
 /** Paso 3 — Horarios (fechas en hora CDMX y regla que genera las sesiones). */
 @Component({
   selector: 'adm-schedule-step',
-  imports: [ReactiveFormsModule, RouterLink, WeekdayPicker, DateListField],
+  imports: [ReactiveFormsModule, RouterLink, WeeklyScheduleField, DateListField],
   providers: [{ provide: OfferStep, useExisting: forwardRef(() => ScheduleStep) }],
   templateUrl: './schedule-step.html',
   styles: `
@@ -48,15 +48,14 @@ export class ScheduleStep extends OfferStep {
     totalHours: this.fb.control<number | null>(null),
     calendarCategory: this.fb.control<CalendarCategory>('TRAINING'),
     hasRule: [false],
-    startTime: [''],
-    endTime: [''],
     excludeMexicanHolidays: [true],
   });
-  protected readonly days = signal<readonly number[]>([]);
+  /** Días de clase con su horario (puede ser distinto por día). */
+  protected readonly slots = signal<readonly WeeklySlot[]>([]);
   protected readonly excludedDates = signal<readonly string[]>([]);
   protected readonly hasRule = signal(false);
   private readonly snapshot = signal('');
-  private readonly extrasKey = computed(() => JSON.stringify([this.days(), this.excludedDates()]));
+  private readonly extrasKey = computed(() => JSON.stringify([this.slots(), this.excludedDates()]));
   private readonly formIsDirty = formDirty(this.form);
   readonly dirty = computed(() => this.formIsDirty() || this.extrasKey() !== this.snapshot());
 
@@ -85,9 +84,7 @@ export class ScheduleStep extends OfferStep {
       calendarCategory: v.calendarCategory,
       scheduleRule: v.hasRule
         ? {
-            weekdays: [...this.days()],
-            startTime: v.startTime,
-            endTime: v.endTime,
+            slots: this.slots().map((s) => ({ ...s })),
             excludedDates: [...this.excludedDates()],
             excludeMexicanHolidays: v.excludeMexicanHolidays,
           }
@@ -109,12 +106,10 @@ export class ScheduleStep extends OfferStep {
       totalHours: s.totalHours,
       calendarCategory: s.calendarCategory,
       hasRule: !!rule,
-      startTime: rule?.startTime ?? '',
-      endTime: rule?.endTime ?? '',
       excludeMexicanHolidays: rule?.excludeMexicanHolidays ?? true,
     });
     this.hasRule.set(!!rule);
-    this.days.set(rule?.weekdays ?? []);
+    this.slots.set(ruleSlots(rule));
     this.excludedDates.set(rule?.excludedDates ?? []);
     this.snapshot.set(this.extrasKey());
     this.applyReadonly(this.form);

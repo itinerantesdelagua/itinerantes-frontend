@@ -57,6 +57,10 @@ const offer = offerFixture({
       weekdays: [1, 3],
       startTime: '18:00',
       endTime: '20:00',
+      slots: [
+        { weekday: 1, startTime: '18:00', endTime: '20:00' },
+        { weekday: 3, startTime: '18:00', endTime: '20:00' },
+      ],
       excludedDates: [],
       excludeMexicanHolidays: true,
     },
@@ -148,7 +152,12 @@ describe('SessionsPage', () => {
     await settle();
     const preview = http.expectOne(`${API}/admin/offers/o1/sessions/preview`);
     expect(preview.request.body).toMatchObject({
-      rule: { weekdays: [1, 3], startTime: '18:00', endTime: '20:00' },
+      rule: {
+        slots: [
+          { weekday: 1, startTime: '18:00', endTime: '20:00' },
+          { weekday: 3, startTime: '18:00', endTime: '20:00' },
+        ],
+      },
       startDate: '2026-11-09',
       endDate: '2027-01-29',
     });

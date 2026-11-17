@@ -1,4 +1,4 @@
-import { MoneyDto, OfferScheduleDto } from 'data-access';
+import { MoneyDto, OfferScheduleDto, SessionSlotDto } from 'data-access';
 
 /** Hora oficial de los horarios (HU-11). */
 export const CDMX = 'America/Mexico_City';
@@ -63,21 +63,93 @@ export const time = (iso: string, timeZone: string) =>
 export const zoneName = (timeZone: string) =>
   (timeZone.split('/').pop() ?? timeZone).replace(/_/g, ' ');
 
+/** Días con el mismo horario (CDMX) y su primera sesión (UTC) para convertir a otra zona. */
+export interface ScheduleGroup {
+  /** "Lun y mié". */
+  readonly days: string;
+  readonly weekdays: readonly number[];
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly firstSession: SessionSlotDto | null;
+}
+
+/**
+ * Agrupa los días por horario, de lunes a domingo: con el mismo horario todos
+ * los días hay un solo grupo; con horario por día, p. ej. "Lun" 10:00–12:00 y
+ * "Jue" 16:00–18:00. Si la API no trae `slots` (regla antigua), usa los campos
+ * clásicos.
+ */
+export function scheduleGroups(schedule: OfferScheduleDto): ScheduleGroup[] {
+  const slots: OfferScheduleDto['slots'] = schedule.slots?.length
+    ? schedule.slots
+    : [...schedule.weekdays]
+        .sort((a, b) => a - b)
+        .map((weekday) => ({
+          weekday,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          firstSession: schedule.firstSession,
+        }));
+  const groups = new Map<string, { weekdays: number[]; slots: typeof slots }>();
+  for (const slot of [...slots].sort((a, b) => a.weekday - b.weekday)) {
+    const key = `${slot.startTime}-${slot.endTime}`;
+    const group = groups.get(key) ?? { weekdays: [], slots: [] };
+    group.weekdays.push(slot.weekday);
+    group.slots.push(slot);
+    groups.set(key, group);
+  }
+  return [...groups.values()].map(({ weekdays, slots: [first, ...rest] }) => ({
+    days: weekdaysLabel(weekdays),
+    weekdays,
+    startTime: first.startTime,
+    endTime: first.endTime,
+    firstSession: [first, ...rest]
+      .map((s) => s.firstSession)
+      .filter((f): f is SessionSlotDto => !!f)
+      .reduce<SessionSlotDto | null>((a, b) => (!a || b.startsAt < a.startsAt ? b : a), null),
+  }));
+}
+
+/**
+ * Horario en CDMX: "Sáb y dom · 10:00–13:00" o, con horario distinto por día,
+ * "Lun 10:00–12:00 · Jue 16:00–18:00".
+ */
+export function scheduleHeading(schedule: OfferScheduleDto): string {
+  const groups = scheduleGroups(schedule);
+  if (groups.length <= 1) {
+    const days = groups[0]?.days ?? weekdaysLabel(schedule.weekdays);
+    const start = groups[0]?.startTime ?? schedule.startTime;
+    const end = groups[0]?.endTime ?? schedule.endTime;
+    return `${days ? `${days} · ` : ''}${start}–${end}`;
+  }
+  return groups.map((g) => `${g.days} ${g.startTime}–${g.endTime}`).join(' · ');
+}
+
+/**
+ * El horario convertido a otra zona (de la primera sesión de cada grupo, en
+ * UTC): "11:00–14:00" o "Lun 11:00–13:00 · Jue 17:00–19:00". null si falta la
+ * primera sesión.
+ */
+export function scheduleIn(schedule: OfferScheduleDto, timeZone: string): string | null {
+  const groups = scheduleGroups(schedule);
+  const range = (s: SessionSlotDto) => `${time(s.startsAt, timeZone)}–${time(s.endsAt, timeZone)}`;
+  if (groups.length <= 1) {
+    const first = groups[0]?.firstSession ?? schedule.firstSession;
+    return first ? range(first) : null;
+  }
+  if (groups.some((g) => !g.firstSession)) return null;
+  return groups.map((g) => `${g.days} ${range(g.firstSession!)}`).join(' · ');
+}
+
 /**
  * Horario: "Sáb y dom · 10:00–13:00" (CDMX) y, si la persona está en otra
- * zona, "11:00–14:00" con su ciudad (de la primera sesión, en UTC).
+ * zona, "11:00–14:00" con su ciudad (de la primera sesión, en UTC). Con
+ * horario distinto por día, cada grupo de días con su horario.
  */
 export function scheduleLines(schedule: OfferScheduleDto, timeZone: string) {
-  const days = weekdaysLabel(schedule.weekdays);
-  const cdmx = `${days ? `${days} · ` : ''}${schedule.startTime}–${schedule.endTime}`;
-  const first = schedule.firstSession;
-  const local =
-    first && timeZone !== CDMX
-      ? {
-          time: `${time(first.startsAt, timeZone)}–${time(first.endsAt, timeZone)}`,
-          zone: zoneName(timeZone),
-        }
-      : null;
+  const cdmx = scheduleHeading(schedule);
+  const converted = timeZone !== CDMX ? scheduleIn(schedule, timeZone) : null;
+  const local = converted ? { time: converted, zone: zoneName(timeZone) } : null;
   return { cdmx, local };
 }
 

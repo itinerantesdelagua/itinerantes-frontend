@@ -1,5 +1,12 @@
 import { OfferScheduleDto } from 'data-access';
-import { dateRange, formatMoney, scheduleLines, shortDate, weekdaysLabel } from './catalog-format';
+import {
+  dateRange,
+  formatMoney,
+  scheduleGroups,
+  scheduleLines,
+  shortDate,
+  weekdaysLabel,
+} from './catalog-format';
 
 const schedule = {
   timezone: 'America/Mexico_City',
@@ -8,6 +15,36 @@ const schedule = {
   endTime: '13:00',
   firstSession: { startsAt: '2026-11-07T16:00:00.000Z', endsAt: '2026-11-07T19:00:00.000Z' },
 } as OfferScheduleDto;
+
+/** Lun y mié 10:00–12:00, jue 16:00–18:00 (CDMX). */
+const perDay = {
+  timezone: 'America/Mexico_City',
+  weekdays: [1, 3, 4],
+  startTime: '10:00',
+  endTime: '12:00',
+  sameTimeAllDays: false,
+  slots: [
+    {
+      weekday: 1,
+      startTime: '10:00',
+      endTime: '12:00',
+      firstSession: { startsAt: '2026-11-09T16:00:00.000Z', endsAt: '2026-11-09T18:00:00.000Z' },
+    },
+    {
+      weekday: 3,
+      startTime: '10:00',
+      endTime: '12:00',
+      firstSession: { startsAt: '2026-11-11T16:00:00.000Z', endsAt: '2026-11-11T18:00:00.000Z' },
+    },
+    {
+      weekday: 4,
+      startTime: '16:00',
+      endTime: '18:00',
+      firstSession: { startsAt: '2026-11-12T22:00:00.000Z', endsAt: '2026-11-13T00:00:00.000Z' },
+    },
+  ],
+  firstSession: { startsAt: '2026-11-09T16:00:00.000Z', endsAt: '2026-11-09T18:00:00.000Z' },
+} satisfies OfferScheduleDto;
 
 describe('catalog-format', () => {
   it('rangos de fechas en la zona', () => {
@@ -27,6 +64,18 @@ describe('catalog-format', () => {
       local: { time: '11:00–14:00', zone: 'Bogota' },
     });
     expect(scheduleLines(schedule, 'America/Mexico_City').local).toBeNull();
+  });
+
+  it('horario distinto por día: agrupa los días con el mismo horario', () => {
+    expect(scheduleGroups(perDay).map((g) => [g.days, g.startTime, g.endTime])).toEqual([
+      ['Lun y mié', '10:00', '12:00'],
+      ['Jue', '16:00', '18:00'],
+    ]);
+    expect(scheduleLines(perDay, 'America/Bogota')).toEqual({
+      cdmx: 'Lun y mié 10:00–12:00 · Jue 16:00–18:00',
+      local: { time: 'Lun y mié 11:00–13:00 · Jue 17:00–19:00', zone: 'Bogota' },
+    });
+    expect(scheduleLines(perDay, 'America/Mexico_City').local).toBeNull();
   });
 
   it('montos con su moneda', () => {

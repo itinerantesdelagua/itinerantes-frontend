@@ -115,28 +115,14 @@
 
     @if (hasRule()) {
       <div class="adm-grid rule">
-        <adm-weekday-picker
+        <adm-weekly-schedule-field
           class="adm-grid__full"
-          [(value)]="days"
+          idPrefix="s"
+          [(value)]="slots"
           [disabled]="readonly()"
-          [error]="issue('weekdays')"
+          [daysError]="issue('weekdays')"
+          [error]="issue('endTime') ?? issue('startTime') ?? issue('scheduleRule')"
         />
-        <div class="adm-field">
-          <label class="adm-field__label" for="s-start-time">Hora de inicio</label>
-          <input
-            id="s-start-time"
-            class="adm-field__input"
-            type="time"
-            formControlName="startTime"
-          />
-        </div>
-        <div class="adm-field">
-          <label class="adm-field__label" for="s-end-time">Hora de fin</label>
-          <input id="s-end-time" class="adm-field__input" type="time" formControlName="endTime" />
-          @if (issue('endTime') ?? issue('scheduleRule')) {
-            <p class="adm-field__error">{{ issue('endTime') ?? issue('scheduleRule') }}</p>
-          }
-        </div>
         <label class="adm-check adm-grid__full">
           <input type="checkbox" formControlName="excludeMexicanHolidays" />
           Omitir los festivos oficiales de México
