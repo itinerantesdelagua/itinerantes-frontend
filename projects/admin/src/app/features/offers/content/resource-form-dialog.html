@@ -112,7 +112,9 @@
             />
             {{ uploading() ? 'Subiendo…' : file() ? 'Reemplazar archivo' : 'Subir archivo' }}
           </label>
-          <p id="resource-file-hint" class="adm-field__hint">{{ acceptHint() }}, hasta 50 MB.</p>
+          <p id="resource-file-hint" class="adm-field__hint">
+            {{ acceptHint() }}, hasta {{ maxSize }}.
+          </p>
           @if (fileError()) {
             <p class="adm-field__error" role="alert">{{ fileError() }}</p>
           } @else if (submitted() && sourceError()) {

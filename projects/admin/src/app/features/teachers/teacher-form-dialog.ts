@@ -16,6 +16,7 @@ import { firstValueFrom } from 'rxjs';
 import { ErrorPresenter } from '../../core/error-presenter';
 import { FormActions } from '../../shared/form-actions/form-actions';
 import { ImageField } from '../../shared/image-field/image-field';
+import { IMAGE_UPLOAD_HINT } from '../../shared/image-field/image-upload';
 
 /** Reglas de la API (CreateTeacherRequestDto). */
 const NAME = { min: 3, max: 160 } as const;
@@ -36,7 +37,7 @@ const HTTPS_URL = /^https:\/\/\S+$/;
           label="Foto"
           purpose="TEACHER_PHOTO"
           shape="round"
-          hint="JPG, PNG o WebP de hasta 5 MB. Se muestra en la ficha de las ofertas."
+          [hint]="photoHint"
           [(image)]="photo"
         />
 
@@ -121,6 +122,7 @@ export class TeacherFormDialog {
   protected readonly saving = signal(false);
   protected readonly submitted = signal(false);
   protected readonly photo = signal<AdminImageDto | null>(null);
+  protected readonly photoHint = `${IMAGE_UPLOAD_HINT}. Se muestra en la ficha de las ofertas.`;
 
   protected readonly form = inject(NonNullableFormBuilder).group({
     fullName: [

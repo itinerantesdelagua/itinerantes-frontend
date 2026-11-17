@@ -208,6 +208,61 @@ describe('CheckoutPage', () => {
     );
   });
 
+  it('transferencia: el comprobante admite hasta 15 MB', async () => {
+    const { fixture, host } = await render(
+      { postulacion: 'a1' },
+      quote({
+        concept: 'BALANCE',
+        application: {
+          id: 'a1',
+          folio: 'BEC-1',
+          kind: 'SCHOLARSHIP',
+          status: 'APPROVED_PENDING_PAYMENT',
+          assignedScholarshipTypeId: null,
+          assignedScholarshipType: null,
+          assignedPercent: 50,
+          originalAmount: mxn(1097000),
+          dueAt: '2026-12-27T06:00:00.000Z',
+        },
+        amount: mxn(548500),
+        methods: [
+          { method: 'CARD', available: true, reason: null },
+          { method: 'BANK_TRANSFER', available: true, reason: null },
+        ],
+        installments: null,
+        bankTransfer: {
+          accountHolder: 'Escuela Itinerante del Agua AC',
+          bankName: 'Banco',
+          clabe: '012345678901234567',
+          reference: 'EIA-BEC-1',
+          amount: mxn(548500),
+        },
+      }),
+    );
+    [...host.querySelectorAll<HTMLInputElement>('input[name="pay-method"]')][1].click();
+    await fixture.whenStable();
+    const form = host.querySelector('portal-transfer-form')!;
+    expect(form.textContent).toContain('Comprobante (PDF, JPG o PNG, hasta 15 MB)');
+
+    const input = form.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const pick = async (megabytes: number) => {
+      const file = new File(['%PDF'], 'comprobante.pdf', { type: 'application/pdf' });
+      Object.defineProperty(file, 'size', { value: megabytes * 1024 * 1024 });
+      Object.defineProperty(input, 'files', { value: [file], configurable: true });
+      input.dispatchEvent(new Event('change'));
+      await fixture.whenStable();
+    };
+
+    await pick(12);
+    expect(form.querySelector('.field__error')).toBeNull();
+    expect(form.querySelector('.file__name')?.textContent).toContain('comprobante.pdf');
+
+    await pick(15.5);
+    expect(form.querySelector('.field__error')?.textContent).toContain(
+      'Sube un PDF, JPG o PNG de hasta 15 MB.',
+    );
+  });
+
   it('ya inscrito: no deja pagar y lleva al aula', async () => {
     const { host } = await render(
       { oferta: 'o1' },

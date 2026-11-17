@@ -10,6 +10,7 @@ export * from './api-client';
 export * from './models.generated';
 export * from './operations.generated';
 export * from './participant-attendance';
+export * from './upload-limits';
 export * from './services/health.api';
 export * from './services/catalogs.api';
 export * from './services/auth.api';

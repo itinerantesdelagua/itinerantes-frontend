@@ -63,7 +63,7 @@ const draft = (answers: object = {}) =>
         minFiles: 1,
         maxFiles: 10,
         maxLinks: 5,
-        image: { mimeTypes: ['image/jpeg', 'image/png'], maxBytes: 10_485_760 },
+        image: { mimeTypes: ['image/jpeg', 'image/png'], maxBytes: 15_728_640 },
         video: { mimeTypes: ['video/mp4', 'video/quicktime'], maxBytes: 104_857_600 },
       },
     },
@@ -102,7 +102,7 @@ describe('ScholarshipForm', () => {
     expect(host.querySelector<HTMLInputElement>('#sch-phone')?.value).toBe('3001234567');
     expect(host.querySelector<HTMLInputElement>('#sch-age')?.value).toBe('34');
     expect(host.querySelector('.drop__hint')?.textContent).toContain(
-      'JPG/PNG hasta 10 MB · MP4/MOV hasta 100 MB',
+      'JPG/PNG hasta 15 MB · MP4/MOV hasta 100 MB',
     );
     expect(host.querySelector('.estimate')?.textContent).toContain('Elige un nivel');
 

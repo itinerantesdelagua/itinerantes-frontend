@@ -4,6 +4,7 @@ import {
   FINAL_PROJECT_CONTENT_TYPE_VALUES,
   FinalProjectContentType,
   FinalProjectDto,
+  formatMegabytes,
   toApiError,
 } from 'data-access';
 import { firstValueFrom } from 'rxjs';
@@ -42,9 +43,7 @@ export class FinalProject {
   protected readonly size = fileSize;
   protected readonly accept =
     '.pdf,.docx,.pptx,.zip,' + FINAL_PROJECT_CONTENT_TYPE_VALUES.join(',');
-  protected readonly maxLabel = computed(
-    () => `${Math.round(this.project().maxBytes / 1_048_576)} MB`,
-  );
+  protected readonly maxLabel = computed(() => formatMegabytes(this.project().maxBytes));
 
   protected date(iso: string): string {
     return dateTimeIn(iso, this.timezone());

@@ -2,12 +2,16 @@ import { inject, Injectable } from '@angular/core';
 import {
   AdminImageDto,
   AdminUploadsApi,
+  formatMegabytes,
   IMAGE_UPLOAD_RULES,
   ImageContentType,
   ImageUploadPurpose,
 } from 'data-access';
 import { firstValueFrom } from 'rxjs';
 import { ErrorPresenter } from '../../core/error-presenter';
+
+/** "JPG, PNG o WebP de hasta 15 MB": ayuda de los campos de imagen. */
+export const IMAGE_UPLOAD_HINT = `JPG, PNG o WebP de hasta ${formatMegabytes(IMAGE_UPLOAD_RULES.maxBytes)}`;
 
 /** Valida y sube una imagen; devuelve su `key` y una URL local para la vista previa. */
 @Injectable({ providedIn: 'root' })
@@ -21,7 +25,7 @@ export class ImageUpload {
       return 'Usa una imagen JPG, PNG o WebP.';
     }
     if (file.size > IMAGE_UPLOAD_RULES.maxBytes) {
-      return 'La imagen pesa más de 5 MB.';
+      return `La imagen pesa más de ${formatMegabytes(IMAGE_UPLOAD_RULES.maxBytes)}.`;
     }
     return null;
   }

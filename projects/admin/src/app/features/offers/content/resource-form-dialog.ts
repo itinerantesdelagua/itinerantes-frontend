@@ -13,6 +13,7 @@ import {
   AdminModuleDto,
   AdminResourceDto,
   ApiBody,
+  formatMegabytes,
   LibraryApi,
   MaterialResourceType,
   RESOURCE_UPLOAD_RULES,
@@ -122,6 +123,7 @@ export class ResourceFormDialog {
   protected readonly titleMax = TITLE_MAX;
   protected readonly noun = computed(() => RESOURCE_NOUN[this.type()]);
   protected readonly acceptHint = computed(() => ACCEPT_HINT[this.type()]);
+  protected readonly maxSize = formatMegabytes(RESOURCE_UPLOAD_RULES.maxBytes);
   protected readonly accept = computed(() =>
     RESOURCE_UPLOAD_RULES.contentTypes[this.type()].join(','),
   );
@@ -204,7 +206,7 @@ export class ResourceFormDialog {
       return;
     }
     if (picked.size > RESOURCE_UPLOAD_RULES.maxBytes) {
-      this.fileError.set('El archivo pesa más de 50 MB.');
+      this.fileError.set(`El archivo pesa más de ${this.maxSize}.`);
       return;
     }
     this.fileError.set(null);

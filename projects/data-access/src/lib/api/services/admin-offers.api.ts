@@ -4,6 +4,7 @@ import { map, Observable, switchMap } from 'rxjs';
 import { ApiClient } from '../api-client';
 import { ImageContentType, ImageUploadPurpose, Uuid } from '../models.generated';
 import { ApiBody, ApiQuery, ApiResponse } from '../operations.generated';
+import { UPLOAD_MAX_BYTES } from '../upload-limits';
 
 /** Cuerpo de cada paso del asistente, por su segmento en la URL. */
 export interface OfferStepBodies {
@@ -109,7 +110,7 @@ export class AdminTeachersApi {
 /** Imágenes permitidas y tamaño máximo (lo valida también la API). */
 export const IMAGE_UPLOAD_RULES = {
   contentTypes: ['image/jpeg', 'image/png', 'image/webp'] as readonly ImageContentType[],
-  maxBytes: 5 * 1024 * 1024,
+  maxBytes: UPLOAD_MAX_BYTES,
 } as const;
 
 /** Subida de imágenes de difusión (portada, carrusel, foto de docente). */
