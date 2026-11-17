@@ -1,6 +1,6 @@
+import { scheduleGroups, scheduleIn } from 'catalog';
 import { ApplicationStatus, ApplicationTimelineStep, OfferScheduleDto } from 'data-access';
 import { TIMELINE_LABELS } from '../../shared/applications/application-labels';
-import { timeIn } from '../calendar/calendar-time';
 
 /** Hora oficial de los horarios y de las entrevistas (HU-11). */
 export const CDMX = 'America/Mexico_City';
@@ -39,9 +39,13 @@ export function weekdaysLabel(weekdays: readonly number[]): string {
   return text ? text[0].toUpperCase() + text.slice(1) : '';
 }
 
-/** "Sáb y dom 10:00–13:00 CDMX". */
+/** "Sáb y dom 10:00–13:00 CDMX" o, con horario por día, "Lun 10:00–12:00 · Jue 16:00–18:00 CDMX". */
 export function scheduleLabel(schedule: OfferScheduleDto): string {
-  return `${weekdaysLabel(schedule.weekdays)} ${schedule.startTime}–${schedule.endTime} CDMX`;
+  const groups = scheduleGroups(schedule);
+  const text = groups.length
+    ? groups.map((g) => `${g.days} ${g.startTime}–${g.endTime}`).join(' · ')
+    : `${weekdaysLabel(schedule.weekdays)} ${schedule.startTime}–${schedule.endTime}`;
+  return `${text} CDMX`;
 }
 
 /** "Bogota" (último tramo de la zona IANA). */
@@ -49,11 +53,14 @@ export function zoneName(timeZone: string): string {
   return (timeZone.split('/').pop() ?? timeZone).replace(/_/g, ' ');
 }
 
-/** "11:00–14:00 Bogota": el horario en la zona de la persona (null si es la de CDMX). */
+/**
+ * "11:00–14:00 Bogota" (o "Lun 11:00–13:00 · Jue 17:00–19:00 Bogota" con horario por día): el
+ * horario en la zona de la persona (null si es la de CDMX o falta la primera sesión).
+ */
 export function localScheduleLabel(schedule: OfferScheduleDto, timeZone: string): string | null {
-  const first = schedule.firstSession;
-  if (!first || timeZone === CDMX) return null;
-  return `${timeIn(first.startsAt, timeZone)}–${timeIn(first.endsAt, timeZone)} ${zoneName(timeZone)}`;
+  if (timeZone === CDMX) return null;
+  const converted = scheduleIn(schedule, timeZone);
+  return converted ? `${converted} ${zoneName(timeZone)}` : null;
 }
 
 /** "jue 7 ene 2027" en la zona de la persona. */

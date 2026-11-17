@@ -31504,6 +31504,42 @@
           "endsAt"
         ]
       },
+      "OfferScheduleSlotDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "example": 1,
+            "description": "Día ISO: 1 = lunes … 7 = domingo."
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00",
+            "description": "Hora de inicio en CDMX (HH:mm) de ese día."
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00",
+            "description": "Hora de fin en CDMX (HH:mm) de ese día."
+          },
+          "firstSession": {
+            "nullable": true,
+            "description": "Primera sesión de ESE día según la regla, en UTC (para mostrarlo también en la hora del visitante). null si la oferta no tiene fecha de inicio.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionSlotDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "weekday",
+          "startTime",
+          "endTime",
+          "firstSession"
+        ]
+      },
       "OfferScheduleDto": {
         "type": "object",
         "properties": {
@@ -31526,12 +31562,24 @@
           "startTime": {
             "type": "string",
             "example": "10:00",
-            "description": "Hora de inicio en CDMX (HH:mm)."
+            "description": "Hora de inicio en CDMX (HH:mm) del primer día de la semana con clase (ver `slots`)."
           },
           "endTime": {
             "type": "string",
             "example": "13:00",
-            "description": "Hora de fin en CDMX (HH:mm)."
+            "description": "Hora de fin en CDMX (HH:mm) del primer día de la semana con clase (ver `slots`)."
+          },
+          "sameTimeAllDays": {
+            "type": "boolean",
+            "example": true,
+            "description": "true si todos los días tienen el mismo horario (`startTime`–`endTime`)."
+          },
+          "slots": {
+            "description": "Horario de cada día de clase, de lunes a domingo (puede variar por día).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfferScheduleSlotDto"
+            }
           },
           "firstSession": {
             "nullable": true,
@@ -31549,6 +31597,8 @@
           "weekdays",
           "startTime",
           "endTime",
+          "sameTimeAllDays",
+          "slots",
           "firstSession"
         ]
       },
@@ -33156,19 +33206,15 @@
           "finalProjectGuidelines"
         ]
       },
-      "ScheduleRuleDto": {
+      "ScheduleSlotDto": {
         "type": "object",
         "properties": {
-          "weekdays": {
-            "example": [
-              6,
-              7
-            ],
-            "description": "Días ISO: 1 = lunes … 7 = domingo.",
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+          "weekday": {
+            "type": "number",
+            "example": 1,
+            "minimum": 1,
+            "maximum": 7,
+            "description": "Día ISO: 1 = lunes … 7 = domingo."
           },
           "startTime": {
             "type": "string",
@@ -33177,8 +33223,46 @@
           },
           "endTime": {
             "type": "string",
-            "example": "13:00",
+            "example": "12:00",
             "description": "Fin en hora CDMX (HH:mm), posterior al inicio."
+          }
+        },
+        "required": [
+          "weekday",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "ScheduleRuleDto": {
+        "type": "object",
+        "properties": {
+          "weekdays": {
+            "example": [
+              1,
+              4
+            ],
+            "description": "Días ISO con clase (1 = lunes … 7 = domingo), derivados de `slots`.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00",
+            "description": "Inicio (CDMX, HH:mm) del primer día de `slots`. Compatibilidad: usa `slots`."
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00",
+            "description": "Fin (CDMX, HH:mm) del primer día de `slots`. Compatibilidad: usa `slots`."
+          },
+          "slots": {
+            "description": "Horario de cada día de clase, de lunes a domingo (puede variar por día).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotDto"
+            }
           },
           "excludedDates": {
             "example": [
@@ -33199,7 +33283,10 @@
         "required": [
           "weekdays",
           "startTime",
-          "endTime"
+          "endTime",
+          "slots",
+          "excludedDates",
+          "excludeMexicanHolidays"
         ]
       },
       "AdminOfferScheduleDto": {
@@ -33998,6 +34085,54 @@
           }
         }
       },
+      "ScheduleRuleInputDto": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "description": "Horario por día de clase (sin días repetidos).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotDto"
+            }
+          },
+          "weekdays": {
+            "example": [
+              6,
+              7
+            ],
+            "description": "Forma clásica: días ISO (1 = lunes … 7 = domingo) con el mismo horario.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00",
+            "description": "Forma clásica: inicio en CDMX (HH:mm)."
+          },
+          "endTime": {
+            "type": "string",
+            "example": "13:00",
+            "description": "Forma clásica: fin en CDMX (HH:mm)."
+          },
+          "excludedDates": {
+            "example": [
+              "2026-12-19"
+            ],
+            "description": "Fechas CDMX omitidas (recesos).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeMexicanHolidays": {
+            "type": "boolean",
+            "example": true,
+            "description": "Omite los festivos oficiales de México."
+          }
+        }
+      },
       "UpdateScheduleStepDto": {
         "type": "object",
         "properties": {
@@ -34036,11 +34171,11 @@
           },
           "scheduleRule": {
             "nullable": true,
-            "description": "Regla de horario en hora CDMX (genera las sesiones, HU-29).",
+            "description": "Regla de horario en hora CDMX (genera las sesiones, HU-29). Admite horario distinto por día (`slots`) o el mismo para todos (`weekdays` + `startTime` + `endTime`).",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ScheduleRuleDto"
+                "$ref": "#/components/schemas/ScheduleRuleInputDto"
               }
             ]
           },
@@ -39371,19 +39506,13 @@
           "data"
         ]
       },
-      "ScheduleRuleBodyDto": {
+      "ScheduleSlotBodyDto": {
         "type": "object",
         "properties": {
-          "weekdays": {
-            "example": [
-              6,
-              7
-            ],
-            "description": "Días ISO (1 = lunes … 7 = domingo).",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "weekday": {
+            "type": "number",
+            "example": 1,
+            "description": "Día ISO (1 = lunes … 7 = domingo)."
           },
           "startTime": {
             "type": "string",
@@ -39392,8 +39521,46 @@
           },
           "endTime": {
             "type": "string",
-            "example": "13:00",
+            "example": "12:00",
             "description": "Fin en hora CDMX (HH:mm), posterior al inicio."
+          }
+        },
+        "required": [
+          "weekday",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "ScheduleRuleBodyDto": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "description": "Horario por día de clase (sin días repetidos).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotBodyDto"
+            }
+          },
+          "weekdays": {
+            "example": [
+              6,
+              7
+            ],
+            "description": "Forma clásica: días ISO (1 = lunes … 7 = domingo).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00",
+            "description": "Forma clásica: inicio en CDMX (HH:mm)."
+          },
+          "endTime": {
+            "type": "string",
+            "example": "13:00",
+            "description": "Forma clásica: fin en CDMX (HH:mm), posterior al inicio."
           },
           "excludedDates": {
             "example": [
@@ -39410,12 +39577,7 @@
             "example": true,
             "description": "Omitir festivos oficiales de México."
           }
-        },
-        "required": [
-          "weekdays",
-          "startTime",
-          "endTime"
-        ]
+        }
       },
       "GenerateSessionsRequestDto": {
         "type": "object",

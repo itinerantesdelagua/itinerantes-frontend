@@ -8,7 +8,12 @@ import {
 } from 'data-access';
 import { Button, Dialog, DialogActions } from 'ui-kit';
 import { DateListField } from '../shared/date-list-field';
-import { WeekdayPicker } from '../shared/weekday-picker';
+import {
+  ruleSlots,
+  WeeklyScheduleField,
+  WeeklySlot,
+  weeklyScheduleErrors,
+} from '../shared/weekly-schedule-field';
 import { isoToZonedInput } from '../shared/zoned-time';
 import {
   EXCLUSION_REASON_LABELS,
@@ -37,7 +42,7 @@ const zonedDate = (iso: string | null) => isoToZonedInput(iso).slice(0, 10);
  */
 @Component({
   selector: 'adm-generate-sessions-dialog',
-  imports: [FormsModule, Button, Dialog, DialogActions, WeekdayPicker, DateListField],
+  imports: [FormsModule, Button, Dialog, DialogActions, WeeklyScheduleField, DateListField],
   templateUrl: './generate-sessions-dialog.html',
   styleUrl: './sessions-dialogs.scss',
 })
@@ -52,9 +57,8 @@ export class GenerateSessionsDialog {
   protected readonly formatTime = formatSessionTime;
 
   // --- Regla y excepciones ---
-  protected readonly weekdays = signal<readonly number[]>([]);
-  protected readonly startTime = signal('');
-  protected readonly endTime = signal('');
+  /** Días de clase con su horario (puede ser distinto por día). */
+  protected readonly slots = signal<readonly WeeklySlot[]>([]);
   protected readonly excludedDates = signal<readonly string[]>([]);
   protected readonly excludeHolidays = signal(true);
   protected readonly startDate = signal('');
@@ -75,10 +79,9 @@ export class GenerateSessionsDialog {
 
   protected readonly errors = computed(() => {
     const errors: Partial<Record<'weekdays' | 'time' | 'range' | 'join' | 'host', string>> = {};
-    if (!this.weekdays().length) errors.weekdays = 'Elige al menos un día.';
-    if (!this.startTime() || !this.endTime() || this.endTime() <= this.startTime()) {
-      errors.time = 'Elige la hora de inicio y una de fin posterior.';
-    }
+    const schedule = weeklyScheduleErrors(this.slots());
+    if (schedule.days) errors.weekdays = schedule.days;
+    if (schedule.time) errors.time = schedule.time;
     if (!this.startDate() || !this.endDate() || this.endDate() < this.startDate()) {
       errors.range = 'Elige el primer y el último día (el último no puede ser anterior).';
     }
@@ -131,9 +134,7 @@ export class GenerateSessionsDialog {
     const online = this.store.online();
     return {
       rule: {
-        weekdays: [...this.weekdays()],
-        startTime: this.startTime(),
-        endTime: this.endTime(),
+        slots: this.slots().map((s) => ({ ...s })),
         excludedDates: [...this.excludedDates()],
         excludeMexicanHolidays: this.excludeHolidays(),
       },
@@ -149,9 +150,7 @@ export class GenerateSessionsDialog {
   private reset(): void {
     const offer = this.store.offer();
     const rule = offer?.schedule.scheduleRule;
-    this.weekdays.set(rule?.weekdays ?? []);
-    this.startTime.set(rule?.startTime ?? '');
-    this.endTime.set(rule?.endTime ?? '');
+    this.slots.set(ruleSlots(rule));
     this.excludedDates.set(rule?.excludedDates ?? []);
     this.excludeHolidays.set(rule?.excludeMexicanHolidays ?? true);
     this.startDate.set(zonedDate(offer?.schedule.startsAt ?? null));

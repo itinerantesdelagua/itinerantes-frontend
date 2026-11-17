@@ -4,35 +4,12 @@
       <section class="step" aria-labelledby="gen-rule">
         <h3 id="gen-rule" class="step__title">1. Regla</h3>
         <p class="adm-field__hint">Hora del centro de México.</p>
-        <adm-weekday-picker
-          [(value)]="weekdays"
-          [error]="submitted() ? (errors().weekdays ?? null) : null"
+        <adm-weekly-schedule-field
+          idPrefix="gen"
+          [(value)]="slots"
+          [daysError]="submitted() ? (errors().weekdays ?? null) : null"
+          [error]="submitted() ? (errors().time ?? null) : null"
         />
-        <div class="row">
-          <div class="adm-field">
-            <label class="adm-field__label" for="gen-start">Inicio</label>
-            <input
-              id="gen-start"
-              class="adm-field__input"
-              type="time"
-              name="start"
-              [(ngModel)]="startTime"
-            />
-          </div>
-          <div class="adm-field">
-            <label class="adm-field__label" for="gen-end">Fin</label>
-            <input
-              id="gen-end"
-              class="adm-field__input"
-              type="time"
-              name="end"
-              [(ngModel)]="endTime"
-            />
-          </div>
-        </div>
-        @if (submitted() && errors().time) {
-          <p class="adm-field__error">{{ errors().time }}</p>
-        }
       </section>
 
       <section class="step" aria-labelledby="gen-exceptions">

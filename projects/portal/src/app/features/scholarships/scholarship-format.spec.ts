@@ -15,6 +15,36 @@ const schedule = {
   firstSession: { startsAt: '2027-01-16T16:00:00.000Z', endsAt: '2027-01-16T19:00:00.000Z' },
 } as OfferScheduleDto;
 
+/** Lun y mié 10:00–12:00, jue 16:00–18:00 (CDMX). */
+const perDay = {
+  timezone: 'America/Mexico_City',
+  weekdays: [1, 3, 4],
+  startTime: '10:00',
+  endTime: '12:00',
+  sameTimeAllDays: false,
+  slots: [
+    {
+      weekday: 1,
+      startTime: '10:00',
+      endTime: '12:00',
+      firstSession: { startsAt: '2026-11-09T16:00:00.000Z', endsAt: '2026-11-09T18:00:00.000Z' },
+    },
+    {
+      weekday: 3,
+      startTime: '10:00',
+      endTime: '12:00',
+      firstSession: { startsAt: '2026-11-11T16:00:00.000Z', endsAt: '2026-11-11T18:00:00.000Z' },
+    },
+    {
+      weekday: 4,
+      startTime: '16:00',
+      endTime: '18:00',
+      firstSession: { startsAt: '2026-11-12T22:00:00.000Z', endsAt: '2026-11-13T00:00:00.000Z' },
+    },
+  ],
+  firstSession: { startsAt: '2026-11-09T16:00:00.000Z', endsAt: '2026-11-09T18:00:00.000Z' },
+} satisfies OfferScheduleDto;
+
 describe('scholarship-format', () => {
   it('nombra los días del horario', () => {
     expect(weekdaysLabel([6, 7])).toBe('Sáb y dom');
@@ -26,6 +56,13 @@ describe('scholarship-format', () => {
     expect(scheduleLabel(schedule)).toBe('Sáb y dom 10:00–13:00 CDMX');
     expect(localScheduleLabel(schedule, 'America/Bogota')).toBe('11:00–14:00 Bogota');
     expect(localScheduleLabel(schedule, 'America/Mexico_City')).toBeNull();
+  });
+
+  it('con horario distinto por día, cada grupo de días con su horario', () => {
+    expect(scheduleLabel(perDay)).toBe('Lun y mié 10:00–12:00 · Jue 16:00–18:00 CDMX');
+    expect(localScheduleLabel(perDay, 'America/Bogota')).toBe(
+      'Lun y mié 11:00–13:00 · Jue 17:00–19:00 Bogota',
+    );
   });
 
   it('fecha con día de la semana y cuenta regresiva', () => {

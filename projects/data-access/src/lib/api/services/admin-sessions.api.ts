@@ -4,11 +4,11 @@ import { ScheduleRuleBodyDto, Uuid } from '../models.generated';
 import { ApiBody, ApiResponse } from '../operations.generated';
 
 /**
- * Cuerpo de la vista previa y de "Crear sesiones". El spec declara los días
- * de la regla como texto, pero son días ISO numéricos (1 = lunes … 7).
+ * Cuerpo de la vista previa y de "Crear sesiones". La regla va con `slots`
+ * (horario por día) o con la forma clásica `weekdays` + `startTime`/`endTime`.
  */
 export type GenerateSessionsBody = Omit<ApiBody<'AdminSessions_generate'>, 'rule'> & {
-  readonly rule?: Omit<ScheduleRuleBodyDto, 'weekdays'> & { readonly weekdays: readonly number[] };
+  readonly rule?: ScheduleRuleBodyDto;
 };
 
 /** Sesiones (videoconferencias) de una oferta (HU-29). Ver: `offers.read`; cambiar: `offers.write`. */

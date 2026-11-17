@@ -99,11 +99,92 @@ describe('pasos del asistente de ofertas', () => {
     const body = await save('schedule');
     expect(body['startsAt']).toBe('2026-11-09T16:00:00.000Z');
     expect(body['scheduleRule']).toEqual({
-      weekdays: [1],
-      startTime: '18:00',
-      endTime: '20:00',
+      slots: [{ weekday: 1, startTime: '18:00', endTime: '20:00' }],
       excludedDates: [],
       excludeMexicanHolidays: true,
+    });
+  });
+
+  it('Horarios: horario distinto por día (lun 10–12, jue 16–18) partiendo del mismo para todos', async () => {
+    const { type, save, host, fixture, step } = await mount(ScheduleStep, offerFixture());
+    host.querySelector<HTMLInputElement>('input[formcontrolname="hasRule"]')!.click();
+    await fixture.whenStable();
+    await type('s-start-time', '10:00');
+    await type('s-end-time', '12:00');
+    const days = host.querySelectorAll<HTMLInputElement>('adm-weekday-picker input');
+    days[0].click(); // lunes
+    days[3].click(); // jueves
+    await fixture.whenStable();
+    expect(step.dirty()).toBe(true);
+
+    // "Mismo horario todos los días" viene marcado: una sola pareja de horas.
+    const same = [...host.querySelectorAll<HTMLLabelElement>('label.adm-check')].find((l) =>
+      l.textContent?.includes('Mismo horario todos los días'),
+    )!;
+    expect(same.querySelector('input')!.checked).toBe(true);
+    expect(host.querySelector('#s-start-time-4')).toBeNull();
+
+    same.querySelector('input')!.click();
+    await fixture.whenStable();
+    // Una fila por día, precargada con el horario común.
+    expect(host.querySelector<HTMLInputElement>('#s-start-time-1')!.value).toBe('10:00');
+    expect(host.querySelector<HTMLInputElement>('#s-start-time-4')!.value).toBe('10:00');
+    await type('s-start-time-4', '16:00');
+    await type('s-end-time-4', '18:00');
+
+    const body = await save('schedule');
+    expect(body['scheduleRule']).toEqual({
+      slots: [
+        { weekday: 1, startTime: '10:00', endTime: '12:00' },
+        { weekday: 4, startTime: '16:00', endTime: '18:00' },
+      ],
+      excludedDates: [],
+      excludeMexicanHolidays: true,
+    });
+  });
+
+  it('Horarios: carga una regla guardada con horario por día (y una antigua sin slots)', async () => {
+    const base = offerFixture();
+    const perDay = {
+      ...base,
+      schedule: {
+        ...base.schedule,
+        scheduleRule: {
+          weekdays: [1, 4],
+          startTime: '10:00',
+          endTime: '12:00',
+          slots: [
+            { weekday: 1, startTime: '10:00', endTime: '12:00' },
+            { weekday: 4, startTime: '16:00', endTime: '18:00' },
+          ],
+          excludedDates: [],
+          excludeMexicanHolidays: false,
+        },
+      },
+    };
+    const { host, step } = await mount(ScheduleStep, perDay);
+    expect(step.dirty()).toBe(false);
+    expect(host.querySelector<HTMLInputElement>('#s-start-time-4')!.value).toBe('16:00');
+    expect(host.querySelector<HTMLInputElement>('#s-end-time-4')!.value).toBe('18:00');
+    TestBed.resetTestingModule();
+
+    const legacy = {
+      ...base,
+      schedule: {
+        ...base.schedule,
+        // Regla antigua: sin `slots`.
+        scheduleRule: { weekdays: [6, 7], startTime: '10:00', endTime: '13:00' },
+      },
+    } as unknown as AdminOfferDetailDto;
+    const old = await mount(ScheduleStep, legacy);
+    expect(old.host.querySelector<HTMLInputElement>('#s-start-time')!.value).toBe('10:00');
+    expect(old.host.querySelector('#s-start-time-6')).toBeNull();
+    const body = await old.save('schedule');
+    expect(body['scheduleRule']).toMatchObject({
+      slots: [
+        { weekday: 6, startTime: '10:00', endTime: '13:00' },
+        { weekday: 7, startTime: '10:00', endTime: '13:00' },
+      ],
     });
   });
 

@@ -8,10 +8,10 @@ import {
   dateRange,
   formatMoney,
   percentRange,
+  scheduleHeading,
+  scheduleIn,
   shortDate,
-  time,
   utcOffset,
-  weekdaysLabel,
   zoneName,
 } from '../../catalog-format';
 
@@ -64,17 +64,19 @@ export class OfferSummary {
     return null;
   });
 
-  /** "Sáb y dom · 10:00–13:00" y la tabla de zonas (con la de quien visita). */
+  /**
+   * "Sáb y dom · 10:00–13:00" (o "Lun 10:00–12:00 · Jue 16:00–18:00" con
+   * horario por día) y la tabla de zonas (con la de quien visita).
+   */
   protected readonly schedule = computed(() => {
     const schedule = this.offer().schedule;
     if (!schedule) return null;
-    const days = weekdaysLabel(schedule.weekdays);
-    const heading = `${days ? `${days} · ` : ''}${schedule.startTime}–${schedule.endTime}`;
+    const heading = scheduleHeading(schedule);
     const first = schedule.firstSession;
-    if (!first) return { heading, rows: [] };
+    if (!first || !scheduleIn(schedule, CDMX)) return { heading, rows: [] };
     const visitor = this.timezone();
     const visitorOffset = utcOffset(first.startsAt, visitor);
-    const range = (zone: string) => `${time(first.startsAt, zone)}–${time(first.endsAt, zone)}`;
+    const range = (zone: string) => scheduleIn(schedule, zone) ?? '';
     const rows = SCHEDULE_ZONES.map((zone) => ({
       label: zone.label as string,
       time: range(zone.timeZone),
