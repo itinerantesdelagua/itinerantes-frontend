@@ -1,6 +1,6 @@
 import { Component, inject, input, model, signal } from '@angular/core';
 import { AdminImageDto, ImageUploadPurpose } from 'data-access';
-import { ImageUpload } from '../../../../shared/image-field/image-upload';
+import { IMAGE_UPLOAD_HINT, ImageUpload } from '../../../../shared/image-field/image-upload';
 import { moveItem, removeAt } from '../../../../shared/list/reorder';
 
 /** Varias imágenes en orden (carrusel): agregar, mover y quitar. */
@@ -63,7 +63,7 @@ import { moveItem, removeAt } from '../../../../shared/list/reorder';
           />
           {{ uploading() ? 'Subiendo…' : 'Agregar imágenes' }}
         </label>
-        <p class="adm-field__hint">JPG, PNG o WebP de hasta 5 MB cada una.</p>
+        <p class="adm-field__hint">{{ hint }} cada una.</p>
       }
       @if (error()) {
         <p class="adm-field__error" role="alert">{{ error() }}</p>
@@ -137,6 +137,7 @@ export class ImageListField {
   private readonly uploader = inject(ImageUpload);
   protected readonly uploading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly hint = IMAGE_UPLOAD_HINT;
 
   protected move(index: number, delta: number): void {
     this.images.update((list) => moveItem(list, index, delta));

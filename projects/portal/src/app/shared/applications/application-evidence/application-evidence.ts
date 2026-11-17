@@ -4,6 +4,7 @@ import {
   ApplicationDetailDto,
   ApplicationsApi,
   FileLimitDto,
+  formatMegabytes,
   toApiError,
 } from 'data-access';
 import { firstValueFrom } from 'rxjs';
@@ -15,7 +16,7 @@ const extension = (mime: string) => {
   return EXTENSIONS[subtype] ?? subtype.toUpperCase();
 };
 const limitLabel = (limit: FileLimitDto) =>
-  `${limit.mimeTypes.map(extension).join('/')} hasta ${Math.round(limit.maxBytes / 1_048_576)} MB`;
+  `${limit.mimeTypes.map(extension).join('/')} hasta ${formatMegabytes(limit.maxBytes)}`;
 
 /**
  * Evidencias de una postulación (Figma HU-20 y becas): archivos con subida

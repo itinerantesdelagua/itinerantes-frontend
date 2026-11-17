@@ -1,6 +1,6 @@
 import { Component, inject, input, model, signal } from '@angular/core';
 import { AdminImageDto, ImageUploadPurpose } from 'data-access';
-import { ImageUpload } from './image-upload';
+import { IMAGE_UPLOAD_HINT, ImageUpload } from './image-upload';
 
 let nextImageFieldId = 0;
 
@@ -66,7 +66,7 @@ export class ImageField {
   readonly disabled = input(false);
   /** `round` para fotos de perfil. */
   readonly shape = input<'wide' | 'round'>('wide');
-  readonly hint = input('JPG, PNG o WebP de hasta 5 MB.');
+  readonly hint = input(`${IMAGE_UPLOAD_HINT}.`);
   /** Problema reportado por la API para este campo. */
   readonly issue = input<string | null>(null);
 

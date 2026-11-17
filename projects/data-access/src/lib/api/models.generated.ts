@@ -2454,7 +2454,7 @@ export interface ImageUploadUrlRequestDto {
   readonly offerId?: Uuid;
   readonly fileName: string;
   readonly contentType: ImageContentType;
-  /** Bytes (máx. 5 MB). */
+  /** Bytes (máx. 15 MB). */
   readonly sizeBytes: number;
 }
 
@@ -3047,7 +3047,7 @@ export interface EvidenceUploadRequestDto {
   readonly fileName: string;
   /** Content-Type exacto que enviarás en el PUT. */
   readonly contentType: EvidenceContentType;
-  /** Tamaño en bytes (imágenes ≤ 10 MB; videos ≤ 100 MB). */
+  /** Tamaño en bytes (imágenes ≤ 15 MB; videos ≤ 100 MB). */
   readonly sizeBytes: number;
 }
 
@@ -4528,7 +4528,7 @@ export interface TransferUploadUrlRequestDto {
   readonly fileName: string;
   /** Content-Type exacto que enviarás en el PUT. */
   readonly contentType: TransferProofContentType;
-  /** Tamaño en bytes (≤ 5 MB). */
+  /** Tamaño en bytes (≤ 15 MB). */
   readonly sizeBytes: number;
 }
 

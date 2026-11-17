@@ -14,13 +14,12 @@ import {
   PaymentDto,
   PaymentsApi,
   TRANSFER_PROOF_CONTENT_TYPE_VALUES,
+  TRANSFER_PROOF_MAX_BYTES,
   toApiError,
 } from 'data-access';
 import { firstValueFrom } from 'rxjs';
 import { formatMoney } from '../../../shared/applications/application-format';
 import { PAYMENT_TEXTS, REJECTION_LABELS } from '../payment-texts';
-
-const MAX_BYTES = 5 * 1_048_576;
 
 /** Hoy (YYYY-MM-DD) en la zona del navegador. */
 const today = () => new Date().toLocaleDateString('en-CA');
@@ -94,7 +93,7 @@ export class TransferForm {
     const valid =
       !!file &&
       (TRANSFER_PROOF_CONTENT_TYPE_VALUES as readonly string[]).includes(file.type) &&
-      file.size <= MAX_BYTES;
+      file.size <= TRANSFER_PROOF_MAX_BYTES;
     this.file.set(valid ? file : null);
     this.fileError.set(file && !valid ? this.t.invalidFile : null);
   }

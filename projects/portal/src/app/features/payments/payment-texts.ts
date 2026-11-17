@@ -1,9 +1,11 @@
 import {
   ApiError,
+  formatMegabytes,
   InstallmentStatus,
   PaymentAlertType,
   PaymentPlanStatus,
   PaymentStatus,
+  TRANSFER_PROOF_MAX_BYTES,
   TransferRejectionReason,
 } from 'data-access';
 
@@ -120,7 +122,7 @@ export const PAYMENT_TEXTS = {
     amount: 'Monto',
     copy: 'Copiar',
     copied: 'Copiado',
-    proof: 'Comprobante (PDF, JPG o PNG, hasta 5 MB)',
+    proof: `Comprobante (PDF, JPG o PNG, hasta ${formatMegabytes(TRANSFER_PROOF_MAX_BYTES)})`,
     choose: 'Seleccionar archivo',
     noFile: 'Ningún archivo elegido',
     declared: 'Monto transferido (MXN)',
@@ -132,7 +134,7 @@ export const PAYMENT_TEXTS = {
       'Tu comprobante está en validación: el equipo lo revisa en 1–2 días hábiles. Tu lugar está apartado.',
     rejected: (reason: string) =>
       `Tu último comprobante fue rechazado: ${reason}. Puedes enviar otro.`,
-    invalidFile: 'Sube un PDF, JPG o PNG de hasta 5 MB.',
+    invalidFile: `Sube un PDF, JPG o PNG de hasta ${formatMegabytes(TRANSFER_PROOF_MAX_BYTES)}.`,
   },
   result: {
     processing: 'Procesando tu pago…',
