@@ -34,7 +34,7 @@
           height="16"
         />
         <h2 id="closing-title" class="visually-hidden">{{ c.heading }}</h2>
-        <pub-contact-form [content]="c.form" (back)="closeForm()" />
+        <pub-contact-form [content]="c.form" [preset]="preset()" (back)="closeForm()" />
       </div>
     } @else {
       <img

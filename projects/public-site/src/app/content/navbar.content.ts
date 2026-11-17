@@ -1,11 +1,9 @@
-import { environment } from '../../environments/environment';
 import { NavbarContent } from '../layout/navbar/navbar-content';
 import { PAGE_PATHS } from './page-paths';
+import { portalHref } from './portal-links';
 import { SECTION_IDS } from './section-ids';
 
-/** Registro e inicio de sesión en el Portal (otra app); sin su dominio configurado quedan en "#". */
-const portalHref = (path: string) =>
-  environment.portalUrl ? new URL(path, environment.portalUrl).href : '#';
+/** Registro e inicio de sesión en el Portal (otra app). */
 const registerHref = portalHref('/registro');
 const loginHref = portalHref('/login');
 

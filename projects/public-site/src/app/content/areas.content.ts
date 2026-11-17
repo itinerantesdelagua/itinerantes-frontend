@@ -1,4 +1,5 @@
 import { AreasContent } from '../sections/areas/areas-content';
+import { PORTAL_CATALOG_HREF } from './portal-links';
 
 const img = (name: string) => ({ src: `assets/images/${name}`, alt: '' });
 
@@ -18,7 +19,8 @@ export const AREAS_CONTENT: AreasContent = {
       backdrop: '#d8e7fb', // forma de fondo en móvil (azul)
       title: 'Escuela Itinerante del Agua',
       description: 'Aprende soluciones basadas\nen la naturaleza para revitalizar\nel agua.',
-      cta: { label: 'Conoce la Escuela', href: '#' }, // TODO: destino
+      // Al catálogo del Portal: ahí se ve la oferta y se inscribe o paga.
+      cta: { label: 'Conoce la Escuela', href: PORTAL_CATALOG_HREF },
     },
     {
       id: 'diseno',

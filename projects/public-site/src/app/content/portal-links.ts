@@ -3,6 +3,14 @@ import { OfferActionType } from 'data-access';
 import { environment } from '../../environments/environment';
 import { PAGE_PATHS } from './page-paths';
 
+/** URL de una página del Portal (otra app); sin su dominio configurado queda en "#". */
+export function portalHref(path: string): string {
+  return environment.portalUrl ? new URL(path, environment.portalUrl).href : '#';
+}
+
+/** Catálogo de oferta formativa del Portal (pide iniciar sesión y vuelve al catálogo). */
+export const PORTAL_CATALOG_HREF = portalHref('/catalogo');
+
 /**
  * Acción de una ficha en el Portal (otra app, con la sesión): el Portal pide
  * iniciar sesión si hace falta y ejecuta la acción (postular, inscribirse,

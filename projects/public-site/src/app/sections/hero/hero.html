@@ -34,7 +34,15 @@
         }
       </ul>
     </div>
-    <a uiButton variant="secondary" class="hero__cta" [href]="c.cta.href">{{ c.cta.label }}</a>
+    <a
+      uiButton
+      variant="secondary"
+      class="hero__cta"
+      pubAnchorLink
+      [href]="c.cta.href"
+      (click)="openContact()"
+      >{{ c.cta.label }}</a
+    >
   </div>
 
   <a class="hero__scroll" pubAnchorLink [href]="c.scrollHint.href">

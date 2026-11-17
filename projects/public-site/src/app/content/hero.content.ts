@@ -8,7 +8,9 @@ export const HERO_CONTENT: HeroContent = {
   keywords: ['Saberes indígenas', 'Tecnologías regenerativas', 'Bioingeniería'],
   cta: {
     label: 'Quiero implementar',
-    href: '#', // TODO: confirmar destino del CTA "Quiero implementar"
+    // Mismo formulario que "Contacto", con el asunto y el servicio preseleccionados.
+    href: `#${SECTION_IDS.contact}`,
+    contactPreset: { subject: 'DESIGN_CONSULTING', service: 'TECHNOLOGY_IMPLEMENTATION_ADVICE' },
   },
   scrollHint: {
     label: 'Desliza para explorar',

@@ -2,11 +2,13 @@ import {
   afterNextRender,
   Component,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -32,6 +34,7 @@ import {
 } from 'data-access';
 import { AlertService, Button } from 'ui-kit';
 import { map } from 'rxjs';
+import { ContactPreset } from '../contact-launcher';
 import { ContactFormContent } from './contact-form-content';
 
 /** Reglas de la API (CreateContactMessageRequestDto). */
@@ -84,6 +87,8 @@ type ControlName =
 })
 export class ContactForm {
   readonly content = input.required<ContactFormContent>();
+  /** Asunto y servicio preseleccionados (p. ej. desde "Quiero implementar"). */
+  readonly preset = input<ContactPreset | null>(null);
   readonly back = output<void>();
 
   private readonly contactApi = inject(ContactApi);
@@ -140,6 +145,17 @@ export class ContactForm {
           control.updateValueAndValidity({ emitEvent: false });
         }
       });
+
+    // Después de la suscripción anterior, para que el asunto active sus campos.
+    effect(() => {
+      const preset = this.preset();
+      if (!preset) return;
+      untracked(() => {
+        const { subject, service } = this.form.controls;
+        if (preset.subject) subject.setValue(preset.subject);
+        if (preset.service) service.setValue(preset.service);
+      });
+    });
 
     // Al aparecer, el foco va al primer campo.
     afterNextRender(() => this.focus('#contact-name'));

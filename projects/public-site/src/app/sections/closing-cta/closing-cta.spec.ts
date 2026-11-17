@@ -4,6 +4,7 @@ import { provideApi } from 'data-access';
 import { TestBed } from '@angular/core/testing';
 import { CLOSING_CTA_CONTENT } from '../../content/closing-cta.content';
 import { ClosingCta } from './closing-cta';
+import { ContactLauncher } from './contact-launcher';
 
 describe('ClosingCta', () => {
   async function setup() {
@@ -44,5 +45,28 @@ describe('ClosingCta', () => {
       .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await fixture.whenStable();
     expect(host.querySelector('pub-contact-form')).toBeNull();
+  });
+
+  it('abre el mismo formulario con el asunto preseleccionado cuando lo pide otro CTA', async () => {
+    const { fixture, host } = await setup();
+    const launcher = TestBed.inject(ContactLauncher);
+    launcher.open({ subject: 'DESIGN_CONSULTING', service: 'TECHNOLOGY_IMPLEMENTATION_ADVICE' });
+    await fixture.whenStable();
+
+    expect(launcher.request()).toBeNull();
+    expect(host.querySelector<HTMLSelectElement>('#contact-subject')!.value).toBe(
+      'DESIGN_CONSULTING',
+    );
+    expect(host.querySelector<HTMLSelectElement>('#contact-service')!.value).toBe(
+      'TECHNOLOGY_IMPLEMENTATION_ADVICE',
+    );
+    expect(document.activeElement).toBe(host.querySelector('#contact-name'));
+
+    // Al volver y abrir con "Hablemos", el formulario empieza vacío.
+    host.querySelector<HTMLButtonElement>('.contact-form__back')!.click();
+    await fixture.whenStable();
+    host.querySelector<HTMLButtonElement>('.closing__cta')!.click();
+    await fixture.whenStable();
+    expect(host.querySelector<HTMLSelectElement>('#contact-subject')!.value).toBe('');
   });
 });

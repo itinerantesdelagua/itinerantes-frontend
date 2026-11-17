@@ -1,13 +1,14 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { Button } from 'ui-kit';
 import { SECTION_IDS } from '../../content/section-ids';
 import { AnchorLink } from '../../shared/anchor-link/anchor-link';
+import { ContactLauncher } from '../closing-cta/contact-launcher';
 import { HeroContent } from './hero-content';
 
 /**
  * Hero: título, subtítulo, palabras clave y CTA sobre fondo crema, con
  * ilustraciones decorativas a los lados que se extienden sobre la franja azul
- * de la sección siguiente.
+ * de la sección siguiente. El CTA baja al formulario de contacto y lo abre.
  */
 @Component({
   selector: 'pub-hero',
@@ -19,4 +20,10 @@ export class Hero {
   readonly content = input.required<HeroContent>();
 
   protected readonly sectionId = SECTION_IDS.hero;
+
+  private readonly contactLauncher = inject(ContactLauncher);
+
+  protected openContact(): void {
+    this.contactLauncher.open(this.content().cta.contactPreset);
+  }
 }
